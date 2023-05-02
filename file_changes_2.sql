@@ -1,0 +1,2 @@
+INSERT INTO public.file_changes_2 (id, file_path, method, time_change) VALUES (1, '/Users/roberter/project/test_work/cmd/', 'WRITE         "/Users/roberter/project/test_work/cmd/test.txt"', '2023-05-02 16:03:50.000000 +00:00');
+INSERT INTO public.file_changes_2 (id, file_path, method, time_change) VALUES (2, '/Users/roberter/project/test_work/cmd/', 'REMOVE        "/Users/roberter/project/test_work/cmd/test.txt"', '2023-05-02 16:11:16.000000 +00:00');
