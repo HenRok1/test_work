@@ -31,14 +31,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Here")
+	//fmt.Println("Here")
 	//Подключение к БД
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	fmt.Println("Here2")
+	//fmt.Println("Here2")
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS file_changes_2 (
 	id SERIAL PRIMARY KEY,
