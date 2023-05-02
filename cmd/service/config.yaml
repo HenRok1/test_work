@@ -1,3 +1,4 @@
 path: "/Users/roberter/project/test_work/cmd/"
 commands:
-  - echo hello >> nail.txt
+  - touch ./ALiLA.txt
+  - echo hello >> ALiLA.txt

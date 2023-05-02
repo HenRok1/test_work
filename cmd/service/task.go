@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 type Config struct {
@@ -17,6 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	reader := bufio.NewReader(os.Stdin)
 
 	var conf Config
 
@@ -44,9 +50,37 @@ func main() {
 				log.Println("event:", event)
 				if event.Has(fsnotify.Write) {
 					log.Println("modified file:", event.Name)
+
+					//Запуск команды
+					for i := 0; i < len(conf.Commands); i++ {
+						cmd := exec.Command("sh", "-c", conf.Commands[i])
+						stdoutStderr, err := cmd.CombinedOutput()
+						if err != nil {
+							fmt.Println("finishhh")
+
+							log.Fatal(err)
+						}
+
+						fmt.Printf("%s\n", stdoutStderr)
+					}
 				}
+
+				fmt.Print("Enter 'q' to quit: ")
+				text, err := reader.ReadString('\n')
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				text = strings.TrimSpace(text)
+				if text == "q" {
+					fmt.Println("Exiting program...")
+					os.Exit(0)
+				}
+
 			case err, ok := <-watcher.Errors:
 				if !ok {
+					fmt.Println("finishhh")
+
 					return
 				}
 				log.Println("error:", err)
