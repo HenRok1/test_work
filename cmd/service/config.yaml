@@ -1,4 +1,4 @@
 path: "/Users/roberter/project/test_work/cmd/"
 commands:
-  - touch ./ALiLA.txt
-  - echo hello >> ALiLA.txt
+  - go build -o ../../build/bin/app1 main.go
+  - ../../build/bin/app1
