@@ -199,9 +199,9 @@ func main() {
 			case event, ok := <-watcher.Events:
 				if !ok {
 					fmt.Println("finishhh")
-
 					return
 				}
+
 				log.Println("event:", event)
 				if event.Has(fsnotify.Write) || event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
 					log.Println("modified file:", event.Name)
@@ -245,9 +245,7 @@ func main() {
 								}
 							}
 						}
-
 					}
-
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
@@ -255,6 +253,15 @@ func main() {
 					return
 				}
 				log.Println("error:", err)
+			}
+
+			fmt.Println("Press q for quit from programm")
+			fmt.Println("Press Enter if u want to continue")
+			var input string
+			fmt.Scanln(&input)
+			if input == "q" {
+				fmt.Println("finishhh")
+				os.Exit(0)
 			}
 		}
 	}()
