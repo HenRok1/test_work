@@ -1,4 +1,10 @@
-path: "/Users/roberter/project/test_work/cmd/"
-commands:
-  - go build -o ../../build/bin/app1 main.go
-  - ../../build/bin/app1
+watched_paths:
+  - path: "/Users/roberter/project/test_work/cmd/"
+    commands:
+      - go build -o ../../build/bin/app1 main.go
+      - ../../build/bin/app1
+
+  - path: "/Users/roberter/project/test_work/"
+    commands:
+      - go build -o ../../build/bin/app2 main2.go
+      - ../../build/bin/app2
