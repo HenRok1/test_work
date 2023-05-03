@@ -29,11 +29,17 @@ type FileChange struct {
 }
 
 func main() {
+	fmt.Println(" ")
+
+	fmt.Println("Read config")
 	// Чтение yaml-файла
 	f, err := os.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Read successful")
+
+	fmt.Println(" ")
 
 	fmt.Println("Connect to data base")
 	// Подключение к БД
@@ -60,14 +66,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//fmt.Printf("%+v\n", conf)
-
 	// Создание нового Watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
+
+	fmt.Println(" ")
+	fmt.Println("U can change some file in some path")
 
 	// Start listening for events.
 	go func() {
@@ -79,14 +86,10 @@ func main() {
 					return
 				}
 
-				//log.Println("event:", event)
 				if event.Has(fsnotify.Write) || event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
-					//log.Println("modified file:", event.Name)
 
 					// Запуск команды
 					for _, watchedPath := range conf.WatchedPaths {
-
-						//log.Println("modified file:", event.Name)
 
 						str1 := strings.Split(watchedPath.Path, "/")
 						str2 := strings.Split(event.Name, "/")
@@ -95,9 +98,6 @@ func main() {
 						str1 = str1[:len(str1)-1]
 						str2 = str2[1:]
 
-						//fmt.Println("watchedPath.Path = ", watchedPath.Path)
-						//fmt.Println("watchedPath.Path = ", str1, "len(str1) = ", len(str1))
-						//fmt.Println("event = ", str2, "len(str2) = ", len(str2))
 						if len(str2)-len(str1) == 1 {
 							file, err := os.OpenFile(watchedPath.Log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 							if err != nil {
@@ -117,6 +117,7 @@ func main() {
 								}
 							}
 							if flag == 1 {
+								fmt.Println("Doing commands")
 								for _, command := range watchedPath.Commands {
 									cmd := exec.Command("sh", "-c", command)
 									stdoutStderr, err := cmd.CombinedOutput()
@@ -144,11 +145,11 @@ func main() {
 				log.Println("error:", err)
 			}
 
-			fmt.Println("Press q for quit from programm")
-			fmt.Println("Press Enter if u want to continue")
+			fmt.Println("Press 'q' for quit from programm")
+			fmt.Println("Press 'Enter' if u want to continue")
 			var input string
 			fmt.Scanln(&input)
-			if input == "q" {
+			if input == "q" || input == "Q" {
 				fmt.Println("finishhh")
 				os.Exit(0)
 			}
