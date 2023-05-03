@@ -210,14 +210,15 @@ func main() {
 					for _, watchedPath := range conf.WatchedPaths {
 						str1 := strings.Split(watchedPath.Path, "/")
 						str2 := strings.Split(event.Name, "/")
+
 						str1 = str1[1:]
 						str1 = str1[:len(str1)-1]
 						str2 = str2[1:]
-						fmt.Println("watchedPath.Path = ", watchedPath.Path)
-						fmt.Println("watchedPath.Path = ", str1, "len(str1) = ", len(str1))
-						fmt.Println("event = ", str2, "len(str2) = ", len(str2))
-						if len(str2)-len(str1) == 1 {
 
+						//fmt.Println("watchedPath.Path = ", watchedPath.Path)
+						//fmt.Println("watchedPath.Path = ", str1, "len(str1) = ", len(str1))
+						//fmt.Println("event = ", str2, "len(str2) = ", len(str2))
+						if len(str2)-len(str1) == 1 {
 							flag := 0
 							for i := range str1 {
 								if str1[i] == str2[i] {

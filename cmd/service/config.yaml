@@ -8,3 +8,6 @@ watched_paths:
     commands:
       - go build -o ../../build/bin/app2 main2.go
       - ../../build/bin/app2
+  - path: "/Users/roberter/project/test_work/cmd/service/"
+    commands:
+      - echo hello >> ../../build/Nail.txt
