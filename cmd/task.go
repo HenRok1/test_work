@@ -32,12 +32,14 @@ func main() {
 	fmt.Println(" ")
 
 	fmt.Println("Read config")
+
 	// Чтение yaml-файла
-	f, err := os.ReadFile("config.yaml")
+	conf, err := readConfig("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Read successful")
+
+	fmt.Println("Read successfully")
 
 	fmt.Println(" ")
 
@@ -49,7 +51,7 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println("Connect successful")
+	fmt.Println("Connect successfully")
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS file_changes_2 (
    id SERIAL PRIMARY KEY,
@@ -58,11 +60,6 @@ func main() {
    time_change TIMESTAMP WITH TIME ZONE NOT NULL
    )`)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	var conf Config
-	if err := yaml.Unmarshal(f, &conf); err != nil {
 		log.Fatal(err)
 	}
 
@@ -82,7 +79,7 @@ func main() {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
-					fmt.Println("finishhh")
+					fmt.Println("FINISHHHH....")
 					return
 				}
 
@@ -101,7 +98,7 @@ func main() {
 						if len(str2)-len(str1) == 1 {
 							file, err := os.OpenFile(watchedPath.Log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 							if err != nil {
-								fmt.Println("finishhh")
+								fmt.Println("FINISHHHH....")
 								log.Fatal(err)
 							}
 							log.SetOutput(file)
@@ -117,11 +114,13 @@ func main() {
 								}
 							}
 							if flag == 1 {
+								fmt.Println(" ")
 								fmt.Println("Doing commands")
 								for _, command := range watchedPath.Commands {
 									cmd := exec.Command("sh", "-c", command)
 									stdoutStderr, err := cmd.CombinedOutput()
 									if err != nil {
+										fmt.Println("FINISHHHH....")
 										log.Fatal(err)
 									}
 
@@ -139,7 +138,7 @@ func main() {
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
-					fmt.Println("finishhh")
+					fmt.Println("FINISHHHH....")
 					return
 				}
 				log.Println("error:", err)
@@ -150,7 +149,7 @@ func main() {
 			var input string
 			fmt.Scanln(&input)
 			if input == "q" || input == "Q" {
-				fmt.Println("finishhh")
+				fmt.Println("FINISHHHH....")
 				os.Exit(0)
 			}
 		}
@@ -166,4 +165,17 @@ func main() {
 
 	// Block main goroutine forever.
 	<-make(chan struct{})
+}
+
+func readConfig(path string) (Config, error) {
+	var conf Config
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return conf, err
+	}
+	err = yaml.Unmarshal(f, &conf)
+	if err != nil {
+		return conf, err
+	}
+	return conf, nil
 }
