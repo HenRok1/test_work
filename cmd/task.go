@@ -44,30 +44,29 @@ func main() {
 	fmt.Println(" ")
 
 	fmt.Println("Connect to data base")
+
 	// Подключение к БД
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
+	db, err := connectDB()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer db.Close()
 
 	fmt.Println("Connect successfully")
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS file_changes_2 (
-   id SERIAL PRIMARY KEY,
-   file_path TEXT NOT NULL,
-   method TEXT NOT NULL,
-   time_change TIMESTAMP WITH TIME ZONE NOT NULL
-   )`)
+	// Создание таблицы, если ее нет
+	err = createTable(db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Создание нового Watcher
-	watcher, err := fsnotify.NewWatcher()
+	watcher, err := startWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer watcher.Close()
 
 	fmt.Println(" ")
@@ -156,12 +155,7 @@ func main() {
 	}()
 
 	// Add a path.
-	for _, watchedPath := range conf.WatchedPaths {
-		err = watcher.Add(watchedPath.Path)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	addPath(conf, watcher)
 
 	// Block main goroutine forever.
 	<-make(chan struct{})
@@ -178,4 +172,39 @@ func readConfig(path string) (Config, error) {
 		return conf, err
 	}
 	return conf, nil
+}
+
+func connectDB() (*sqlx.DB, error) {
+	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func createTable(db *sqlx.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS file_changes_2 (
+	   id SERIAL PRIMARY KEY,
+	   file_path TEXT NOT NULL,
+	   method TEXT NOT NULL,
+	   time_change TIMESTAMP WITH TIME ZONE NOT NULL
+   )`)
+	return err
+}
+
+func startWatcher() (*fsnotify.Watcher, error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+	return watcher, nil
+}
+
+func addPath(conf Config, watcher *fsnotify.Watcher) {
+	for _, watchedPath := range conf.WatchedPaths {
+		err := watcher.Add(watchedPath.Path)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
