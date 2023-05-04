@@ -48,6 +48,7 @@ func main() {
 	// Подключение к БД
 	db, err := connectDB()
 	if err != nil {
+		fmt.Println("Не получилось подключиться к базе данных")
 		log.Fatal(err)
 	}
 
@@ -72,89 +73,9 @@ func main() {
 	fmt.Println(" ")
 	fmt.Println("U can change some file in some path")
 
-	// Start listening for events.
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					fmt.Println("FINISHHHH....")
-					return
-				}
+	go watchForEvents(watcher, conf, db)
 
-				if event.Has(fsnotify.Write) || event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
-
-					// Запуск команды
-					for _, watchedPath := range conf.WatchedPaths {
-
-						str1 := strings.Split(watchedPath.Path, "/")
-						str2 := strings.Split(event.Name, "/")
-
-						str1 = str1[1:]
-						str1 = str1[:len(str1)-1]
-						str2 = str2[1:]
-
-						if len(str2)-len(str1) == 1 {
-							file, err := os.OpenFile(watchedPath.Log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-							if err != nil {
-								fmt.Println("FINISHHHH....")
-								log.Fatal(err)
-							}
-							log.SetOutput(file)
-
-							log.Println("event:", event)
-
-							flag := 0
-							for i := range str1 {
-								if str1[i] == str2[i] {
-									flag = 1
-								} else {
-									flag = 0
-								}
-							}
-							if flag == 1 {
-								fmt.Println(" ")
-								fmt.Println("Doing commands")
-								for _, command := range watchedPath.Commands {
-									cmd := exec.Command("sh", "-c", command)
-									stdoutStderr, err := cmd.CombinedOutput()
-									if err != nil {
-										fmt.Println("FINISHHHH....")
-										log.Fatal(err)
-									}
-
-									fmt.Printf("%s\n", stdoutStderr)
-								}
-								change := &FileChange{FilePath: event.Name, Method: event.String(), Time_change: time.Now().UTC()}
-								_, err = db.NamedExec(`INSERT INTO file_changes_2(file_path, method, time_change) VALUES (:file_path, :method, :time_change)`, map[string]interface{}{
-									"file_path": change.FilePath, "method": change.Method, "time_change": change.Time_change.Format(time.RFC3339)})
-								if err != nil {
-									log.Println(err)
-								}
-							}
-						}
-					}
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					fmt.Println("FINISHHHH....")
-					return
-				}
-				log.Println("error:", err)
-			}
-
-			fmt.Println("Press 'q' for quit from programm")
-			fmt.Println("Press 'Enter' if u want to continue")
-			var input string
-			fmt.Scanln(&input)
-			if input == "q" || input == "Q" {
-				fmt.Println("FINISHHHH....")
-				os.Exit(0)
-			}
-		}
-	}()
-
-	// Add a path.
+	// Добавление пути
 	addPath(conf, watcher)
 
 	// Block main goroutine forever.
@@ -205,6 +126,86 @@ func addPath(conf Config, watcher *fsnotify.Watcher) {
 		err := watcher.Add(watchedPath.Path)
 		if err != nil {
 			log.Fatal(err)
+		}
+	}
+}
+
+func watchForEvents(watcher *fsnotify.Watcher, conf Config, db *sqlx.DB) {
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				fmt.Println("FINISHHHH....")
+				return
+			}
+			if event.Has(fsnotify.Write) || event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
+				processEvent(event, conf, db)
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				fmt.Println("FINISHHHH...")
+				return
+			}
+			log.Println("error: ", err)
+		}
+		fmt.Println("Press 'q' for quit from programm")
+		fmt.Println("Press 'Enter' if u want to continue")
+		var input string
+		fmt.Scanln(&input)
+		if input == "q" || input == "Q" {
+			fmt.Println("FINISHHHH....")
+			os.Exit(0)
+		}
+	}
+}
+
+func processEvent(event fsnotify.Event, conf Config, db *sqlx.DB) {
+	for _, watchedPath := range conf.WatchedPaths {
+		str1 := strings.Split(watchedPath.Path, "/")
+		str2 := strings.Split(event.Name, "/")
+
+		str1 = str1[1:]
+		str1 = str1[:len(str1)-1]
+		str2 = str2[1:]
+
+		if len(str2)-len(str1) == 1 {
+			file, err := os.OpenFile(watchedPath.Log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+			if err != nil {
+				fmt.Println("FINISHHHH....")
+				log.Fatal(err)
+			}
+			log.SetOutput(file)
+
+			log.Println("event:", event)
+
+			flag := 0
+			for i := range str1 {
+				if str1[i] == str2[i] {
+					flag = 1
+				} else {
+					flag = 0
+				}
+			}
+			if flag == 1 {
+				fmt.Println(" ")
+				fmt.Println("Doing commands")
+				for _, command := range watchedPath.Commands {
+					cmd := exec.Command("sh", "-c", command)
+					stdoutStderr, err := cmd.CombinedOutput()
+					if err != nil {
+						fmt.Println("FINISHHHH....")
+						log.Fatal(err)
+					}
+
+					fmt.Printf("%s\n", stdoutStderr)
+				}
+				change := &FileChange{FilePath: event.Name, Method: event.String(), Time_change: time.Now().UTC()}
+				_, err = db.NamedExec(`INSERT INTO file_changes_2(file_path, method, time_change) VALUES (:file_path, :method, :time_change)`, map[string]interface{}{
+					"file_path": change.FilePath, "method": change.Method, "time_change": change.Time_change.Format(time.RFC3339)})
+				if err != nil {
+					log.Println(err)
+				}
+			}
 		}
 	}
 }
