@@ -1,6 +1,14 @@
 # Test task for job
 
-# Information
+# Инструкция
+1) Внести в config.yaml путь, команды и папку для логов, как это показано в примере
+2) Запустить docker
+3) Прописать: ```make run```
+4) В новой командной строке прописать: ```make all```
+5) Вносить изменения в директориях, которые вы прописали в config.yaml
+
+
+# Информация
 Консольное приложение для отслеживания изменений в директории на языке Go. \
 В разработке использовался Golang 1.18, база данных PostgreSQL. \
 Были использованы такие библиотеки:
@@ -35,16 +43,11 @@ watched_paths:
       - go build -o ../../build/bin/app2 service/main2.go
       - ../../build/bin/app2
     log_file: /tmp/log2.out
-
-  - path: "/Users/project/test_work/cmd/service/"
-    commands:
-      - echo hello >> ../build/Nail.txt
-    log_file: /tmp/log3.out
 ```
-### Подключение к базе данных и подключение к серверу postgres:
+### Подключение к серверу postgres:
 ```go
 func connectDB() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
+	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		return nil, err
 	}
@@ -65,18 +68,4 @@ str2 = str2[1:]
 
 if len(str2)-len(str1) == 1 {
 ```
-
-# Инструкция:
-1) Нужно перейти в директорию cmd
-2) Необходимо прописать в config.yaml файле путь, команды и папку для логирования
-3) Нужно поднять сервер postgres и прописать в user и db.name
-```go
-db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
-```
-4) При успешном подключении выведится сообщение об этом
-5) Выполнить команду:
-```go
-go build -o main_app main.go
-```
-6) Запустить:
-```./main_app```
+- Для подключения к базе данных по хорошему создать переменную окружения, но в данном случае харкод

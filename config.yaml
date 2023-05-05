@@ -1,0 +1,17 @@
+watched_paths:
+  - path: "/Users/roberter/project/test_work/cmd/"
+    commands:
+      - go build -o build/bin/app1 cmd/service/main.go
+      - build/bin/app1
+    log_file: /tmp/log1.out
+
+  - path: "/Users/roberter/project/test_work/"
+    commands:
+      - go build -o build/bin/app2 cmd/service/main2.go
+      - build/bin/app2
+    log_file: /tmp/log2.out
+
+  - path: "/Users/roberter/project/test_work/cmd/service/"
+    commands:
+      - echo hello >> build/Nail.txt
+    log_file: /tmp/log3.out

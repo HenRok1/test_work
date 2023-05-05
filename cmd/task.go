@@ -96,7 +96,7 @@ func readConfig(path string) (Config, error) {
 }
 
 func connectDB() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
+	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		return nil, err
 	}
