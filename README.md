@@ -1,7 +1,7 @@
 # Test task for job
 
 # Information
-Консольное приложение, для отслеживания изменений в директории на языке Go. \
+Консольное приложение для отслеживания изменений в директории на языке Go. \
 В разработке использовался Golang 1.18, база данных PostgreSQL. \
 Были использованы такие библиотеки:
 ```go
@@ -19,7 +19,7 @@ import (
 )
 ```
 
-## Особенности:
+## Особенности
 Конфигурация считывается с config.yaml файла, в котором прописывается путь, команды и папка для логов.
 ### Пример
 ```yaml
@@ -41,7 +41,7 @@ watched_paths:
       - echo hello >> ../build/Nail.txt
     log_file: /tmp/log3.out
 ```
-### Подключение к базе данных - подключение к серверу postgres:
+### Подключение к базе данных и подключение к серверу postgres:
 ```go
 func connectDB() (*sqlx.DB, error) {
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
@@ -73,7 +73,7 @@ if len(str2)-len(str1) == 1 {
 ```go
 db, err := sqlx.Connect("postgres", "user=postgres dbname=test sslmode=disable")
 ```
-4) При успешном подключении выведитется сообщение об этом
+4) При успешном подключении выведится сообщение об этом
 5) Выполнить команду:
 ```go
 go build -o main_app main.go
